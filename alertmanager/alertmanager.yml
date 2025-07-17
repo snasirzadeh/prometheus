@@ -1,0 +1,36 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  group_by: ['alertname', 'instance']
+  group_wait: 1s
+  group_interval: 1s
+  repeat_interval: 1h 
+  receiver: 'telegram-group'
+  routes:
+    - match:
+        route: 'personal'
+      receiver: 'telegram-personal'
+
+receivers:
+- name: 'telegram-group'
+  telegram_configs:
+    - bot_token: 'your bot token'
+      api_url: 'https://api.telegram.org'
+      chat_id: #your chat id don't use quotation mark
+      send_resolved: true
+      parse_mode: 'Markdown'
+      message: '{{ template "telegram.tmpl" . }}'
+
+- name: 'telegram-personal'
+  telegram_configs:
+    - bot_token: 'your bot token'
+      api_url: 'https://api.telegram.org'
+      chat_id: #your chat id don't use quotation mark
+      send_resolved: true
+      parse_mode: 'Markdown'
+      message: '{{ template "telegram.tmpl" . }}'
+
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+

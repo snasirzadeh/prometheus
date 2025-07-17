@@ -1,0 +1,56 @@
+global:
+  scrape_interval: 30s
+  scrape_timeout: 15s
+  evaluation_interval: 30s
+
+rule_files:
+  - /etc/prometheus/rules/*.yml
+    
+alerting:
+  alertmanagers:
+  - scheme: http
+    path_prefix: /alertmanager
+    static_configs:
+     - targets:
+        - 'alertmanager:9093'
+
+scrape_configs:
+  - job_name: 'Prometheus_Server'
+    static_configs:
+     - targets:
+        - 'prometheus:9090'
+
+  - job_name: 'Servers'
+    static_configs:
+     - targets:
+        - 'example:9100'
+
+  - job_name: 'blackbox_exporter_ping'
+    metrics_path: /probe
+    params:
+      module: [ping]
+    static_configs:
+     - targets:
+        - www.example.com 
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115 
+
+  - job_name: 'blackbox_exporter_http_2xx'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+     - targets:
+        - https://example.com
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115 

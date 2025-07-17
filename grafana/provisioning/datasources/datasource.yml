@@ -1,0 +1,16 @@
+apiVersion: 1
+
+deleteDatasources:
+
+datasources:
+- name: Prometheus
+  type: prometheus
+  access: proxy
+  url: http://prometheus:9090/
+  password:
+  user:
+  database:
+  isDefault: true
+  uid: "000000050"  # Add this line to set the UID
+  version: 1
+  editable: false

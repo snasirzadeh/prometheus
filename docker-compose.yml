@@ -1,0 +1,91 @@
+volumes:
+  prometheus-data:
+    name: prometheus-data
+    external: true
+
+networks:
+  monitoring:
+    driver: bridge
+
+services:
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
+    restart: always
+    networks:
+      - monitoring
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    ports:
+      - '127.0.0.1:9093:9093'
+    volumes:
+    - ./alertmanager/:/etc/alertmanager/
+    command:
+    - --config.file=/etc/alertmanager/alertmanager.yml
+    - --web.external-url=https://example.com/alertmanager
+
+  prometheus:
+    image: prom/prometheus:v2.53.4
+    restart: always
+    networks:
+      - monitoring
+    ports:
+      - '127.0.0.1:9090:9090'
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus-data:/prometheus
+    extra_hosts:
+      - "example:ip"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.page-title=Aminvakil Monitoring
+      - --storage.tsdb.no-lockfile
+      - --storage.tsdb.retention.time=30d
+      - --web.enable-lifecycle
+
+  blackbox:
+    image: prom/blackbox-exporter:v0.25.0
+    restart: always
+    networks:
+      - monitoring
+    ports:
+      - '127.0.0.1:9115:9115'
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    volumes:
+    - ./blackbox/blackbox.yml:/etc/blackbox/blackbox.yml
+    extra_hosts:
+      - "example:ip"
+    command:
+    - --config.file=/etc/blackbox/blackbox.yml
+
+  grafana:
+    image: grafana/grafana:11.5.3
+    restart: always
+    user: "472"
+    networks:
+      - monitoring
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    ports:
+      - '127.0.0.1:3000:3000'
+    environment:
+        GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s:%(http_port)s/grafana/"
+        GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+        GF_USERS_ALLOW_SIGN_UP: "false"
+        GF_LOG_LEVEL: "error"
+        GF_ALERTING_ENABLED: "false"
+    volumes:
+      - ./grafana/data:/var/lib/grafana
+      - ./grafana/dashboards/:/var/lib/grafana/dashboards/
+      - ./grafana/provisioning/:/etc/grafana/provisioning/

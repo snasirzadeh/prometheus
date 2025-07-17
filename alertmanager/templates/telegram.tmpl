@@ -1,0 +1,5 @@
+*{{ .CommonAnnotations.summary }}*
+{{ if eq .Status "firing" }}⚠{{ else }}✅{{ end }} `{{ .CommonLabels.instance }}`
+{{ range .Alerts }}
+{{- if .Labels.name }}▪ *name:* {{ .Labels.name }}{{ end }}
+{{ end }}

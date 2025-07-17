@@ -44,7 +44,7 @@ services:
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
-      - --web.page-title=Aminvakil Monitoring
+      - --web.page-title=Monitoring
       - --storage.tsdb.no-lockfile
       - --storage.tsdb.retention.time=30d
       - --web.enable-lifecycle
